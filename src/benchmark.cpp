@@ -50,7 +50,7 @@ Options parse_options(int argc, char** argv) {
       std::cout
           << "Usage: reorder_bench [--elements POWER_OF_TWO] [--max-rank N] "
              "[--threads P] [--repetitions N] [--warmups N] [--output CSV]\n"
-          << "Defaults: 2^32 bytes, all balanced ranks up to 32, all available "
+          << "Defaults: 2^32 bytes, all exact-square ranks, all available "
              "OpenMP processors, 3 repetitions, 1 warmup.\n";
       std::exit(EXIT_SUCCESS);
     }
@@ -224,7 +224,11 @@ void run(const Options& options) {
   csv << std::setprecision(10);
 
   const double logical_bytes = 2.0 * static_cast<double>(options.elements);
+  const int power = log2_elements(options.elements);
   for (int rank = 1; rank <= options.max_rank; ++rank) {
+    if (power % rank != 0) {
+      continue;
+    }
     const reorder::Dimensions dims = square_dimensions(options.elements, rank);
     std::cerr << "Benchmarking rank " << rank << " ("
               << dimensions_string(dims) << ")...\n";

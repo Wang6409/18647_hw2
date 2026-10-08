@@ -132,7 +132,7 @@ int main() {
     const std::vector<reorder::Dimensions> cases = {
         {1},          {7},          {2, 3},        {3, 1, 4},
         {2, 3, 4},    {2, 2, 3, 2}, {2, 3, 2, 2, 2},
-        {2, 2, 2, 2, 2, 2}};
+        {2, 2, 2, 2, 2, 2}, {257, 257}};
     for (const auto& dims : cases) {
       check_case(dims);
     }

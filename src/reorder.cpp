@@ -99,17 +99,43 @@ void by_index_parallel(const unsigned char* src, unsigned char* dst,
     throw std::overflow_error("element count exceeds parallel loop range");
   }
 
+  constexpr std::int64_t block_size = 1 << 16;
   const auto count = static_cast<std::int64_t>(layout.element_count);
-#pragma omp parallel for schedule(static)
-  for (std::int64_t c_offset = 0; c_offset < count; ++c_offset) {
-    std::size_t f_offset = 0;
-    for (std::size_t d = 0; d < dims.size(); ++d) {
-      const std::size_t index =
-          (static_cast<std::size_t>(c_offset) / layout.c_strides[d]) %
-          dims[d];
-      f_offset += index * layout.f_strides[d];
+  const std::int64_t block_count =
+      count / block_size + (count % block_size != 0);
+
+#pragma omp parallel
+  {
+    Dimensions indices(dims.size(), 0);
+
+#pragma omp for schedule(static)
+    for (std::int64_t block_index = 0; block_index < block_count;
+         ++block_index) {
+      const std::int64_t base = block_index * block_size;
+      const std::int64_t end =
+          base + (count - base < block_size ? count - base : block_size);
+      std::size_t c_offset = static_cast<std::size_t>(base);
+      std::size_t f_offset = 0;
+
+      for (std::size_t d = 0; d < dims.size(); ++d) {
+        indices[d] = (c_offset / layout.c_strides[d]) % dims[d];
+        f_offset += indices[d] * layout.f_strides[d];
+      }
+
+      for (std::int64_t offset = base; offset < end; ++offset) {
+        dst[f_offset] = src[c_offset];
+        ++c_offset;
+
+        for (std::size_t d = dims.size(); d-- > 0;) {
+          if (++indices[d] < dims[d]) {
+            f_offset += layout.f_strides[d];
+            break;
+          }
+          indices[d] = 0;
+          f_offset -= (dims[d] - 1) * layout.f_strides[d];
+        }
+      }
     }
-    dst[f_offset] = src[c_offset];
   }
 }
 
