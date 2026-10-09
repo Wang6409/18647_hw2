@@ -66,6 +66,15 @@ and save the required plot as `.xlsx` or `.pdf`.
     
     scp -r fangmiaw@ece006.ece.local.cmu.edu:~/647_hw2/results ./runs
   ```
-- `plots/`: final bandwidth plot and summary CSVs generated from the ECE006
-  run. `bandwidth_vs_cores.pdf`
+- `plots/bandwidth_vs_cores.csv`: effective bandwidth from the 4 GiB ECE006
+  run, arranged by rank and thread count for the required plot.
+- `plots/bandwidth_vs_cores.pdf`: bandwidth-versus-thread-count plot with one
+  line per exact-square rank (1, 2, 4, 8, 16, 32); use these data in the course
+  Excel template for the required final chart.
+- `plots/speedup_vs_cores.csv`: speedup relative to one thread for each rank
+  and thread count, supporting the parallel speedup analysis.
+- `plots/traffic_model.csv`: logical and idealized write-allocate traffic,
+  plus destination stride by rank, supporting the memory-traffic discussion.
+- `plots/roofline.pdf`: supplementary comparison of reorder bandwidth with
+  the measured contiguous-copy bandwidth baseline.
 - `ai/`: gemini & chatGPT
